@@ -14,6 +14,9 @@ on:
   schedule:
     - cron: '32 5 * * 2'
 
+env:
+  IMAGE_NAME: 'aessing/bind'
+
 permissions:
   contents: read
 
@@ -31,12 +34,12 @@ jobs:
 
       - name: Build an image from Dockerfile
         run: |
-          docker build -t docker.io/aessing/bind:trivy-${{ github.sha }} .
+          docker build -t docker.io/${{ env.IMAGE_NAME }}:trivy-${{ github.sha }} .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@41f05d9ecffa2ed3f1580af306000f734b733e54
         with:
-          image-ref: 'docker.io/aessing/bind:trivy-${{ github.sha }}'
+          image-ref: 'docker.io/${{ env.IMAGE_NAME }}:trivy-${{ github.sha }}'
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
