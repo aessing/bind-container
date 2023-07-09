@@ -1,16 +1,32 @@
-# Project Title
+# Bind Name Server Container
 
-A README file, along with a repository license, contribution guidelines, and a code of conduct, helps you communicate expectations and manage contributions to your project.
+[BIND](https://bind.isc.org/) BIND is an open source DNS software system including an authoritative server or a recursive resolver.
 
-A README is often the first item a visitor will see when visiting your repository. README files typically include information on:
+As the ISC only published a container with BIND9 DNS server for AMD64, this repository builds a Docker container for other architectures / platforms, based on [Alpine Linux](https://www.alpinelinux.org).
 
-- What the project does?
-- Why the project is useful?
-- How can users get started with the project?
-- Where can users get help with your project?
-- Who maintains and contributes to the project?
+### Configuration
 
-:exclamation: Please also have a look at the [license](LICENSE) and if the license fits the needs of your project. :exclamation:
+You can mount the following volumes:
+
+| Volume          | Description                                               |
+| --------------- | --------------------------------------------------------- |
+| /etc/bind       | For the server configuration (your named.conf lives here) |
+| /var/cache/bind | This is the working directory                             |
+| /var/lib/bind   | This is the place where the secondary zones are placed    |
+
+You can expose the following ports:
+
+| Port    | Description                                                                                                                                                                                                                                                                          |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 53/udp  | The most popular port and protocol of DNS is UDP 53                                                                                                                                                                                                                                  |
+| 53/tcp  | Is used as fallback. Bind9 uses TCP when it is unable to communicate on UDP, typically when the packet size is too large to push through in a single UDP packet.                                                                                                                     |
+| 443/tcp | If you want to use DNS over HTTPS (DoH), you can expose this port. To get this running, you have to configure it in your named.conf and provide the certificates.                                                                                                                    |
+| 80/tcp  | You can also use DNS over HTTPS (DoH) without certificates over port 80. To get this running, you have to configure it in your named.conf. Please note, that the traffic is not encrypted. This is only for testing purposes, or when you offload the encryption to a reverse proxy. |
+| 853/tcp | If you want to use DNS over TLS (DoT), you can expose this port. To get this running, you have to configure it in your named.conf and provide the certificates.                                                                                                                      |
+
+## Documentation
+
+For further information, how to configure Bind9, please visit the [Bind9 documentation](https://bind9.readthedocs.io/en/latest/).
 
 ---
 
