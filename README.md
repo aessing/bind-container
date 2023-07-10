@@ -4,7 +4,7 @@
 
 As the ISC only published a container with BIND9 DNS server for AMD64, this repository builds a Docker container for other architectures / platforms, based on [Alpine Linux](https://www.alpinelinux.org).
 
-### Configuration
+### :hammer_and_wrench: Configuration
 
 You can mount the following volumes:
 
@@ -24,9 +24,14 @@ You can expose the following ports:
 | 80/tcp  | You can also use DNS over HTTPS (DoH) without certificates over port 80. To get this running, you have to configure it in your named.conf. Please note, that the traffic is not encrypted. This is only for testing purposes, or when you offload the encryption to a reverse proxy. |
 | 853/tcp | If you want to use DNS over TLS (DoT), you can expose this port. To get this running, you have to configure it in your named.conf and provide the certificates.                                                                                                                      |
 
-## Documentation
+## :eyeglasses: Documentation
 
 For further information, how to configure Bind9, please visit the [Bind9 documentation](https://bind9.readthedocs.io/en/latest/).
+
+## :rocket: Deployment
+
+I added a Kubernetes deployment file to deploy the container to a Kubernetes cluster. You can find the file in the `kubernetes` folder.
+The deployment.yaml file is just an example and uses Traefik as a reverse proxy. You can and probably have to change the deployment file to your needs.
 
 ---
 

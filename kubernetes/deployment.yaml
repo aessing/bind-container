@@ -1,0 +1,470 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bind
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bind-config
+  namespace: bind
+data:
+  named.conf: |-
+    # =============================================================================
+    # Bind Configuration File
+    # Bind Name Server Container
+    # https://github.com/aessing/bind-container
+    # -----------------------------------------------------------------------------
+    # Developer.......: Andre Essing (https://github.com/aessing)
+    #                                (https://www.linkedin.com/in/aessing/)
+    # -----------------------------------------------------------------------------
+    # THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+    # EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+    # WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+    # =============================================================================
+
+    options {
+      hostname  none;
+      server-id none;
+      version   none;
+
+      interface-interval 0;
+
+      listen-on port 53 { any; };
+      listen-on-v6 port 53 { any; };
+
+      directory "/var/cache/bind";
+      dump-file "/var/cache/bind/data/cache_dump.db";
+      statistics-file "/var/cache/bind/data/named_stats.txt";
+      memstatistics-file "/var/cache/bind/data/named_mem_stats.txt";
+      secroots-file "/var/cache/bind/data/named.secroots";
+      recursing-file "/var/cache/bind/data/named.recursing";
+
+      allow-query { localhost; rfc1918-networks; };
+      allow-recursion { localhost; rfc1918-networks; };
+      allow-transfer { none; };
+      allow-notify { none; };
+      allow-update { none; };
+
+      /* 
+        - If you are building an AUTHORITATIVE DNS server, do NOT enable recursion.
+        - If you are building a RECURSIVE (caching) DNS server, you need to enable
+          recursion. 
+        - If your recursive DNS server has a public IP address, you MUST enable access 
+          control to limit queries to your legitimate users. Failing to do so will
+          cause your server to become part of large scale DNS amplification
+          attacks. Implementing BCP38 within your network would greatly
+          reduce such attack surface
+      */
+      recursion yes;
+
+      forwarders { 1.1.1.1; 1.0.0.1; };
+      forward only;
+
+      serial-update-method date;
+      transfer-format many-answers;
+
+      // conform to RFC1035
+      auth-nxdomain no;
+
+      check-names master fail;     # default = fail
+      check-names slave fail;      # default = warn
+      check-names response ignore; # default = ignore
+
+      minimal-any yes;
+      minimal-responses yes;
+
+      dnssec-validation auto;
+
+      zone-statistics yes;
+
+      pid-file "/var/cache/bind/run/named.pid";
+      session-keyfile "/var/cache/bind/run/session.key";
+    };
+
+    # ACLs
+    acl "rfc1918-networks" { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+
+    # logging
+    statistics-channels { inet 127.0.0.1 port 8053 allow { localhost; }; };
+
+    # root hints
+    zone "." { type hint; file "/var/lib/bind/zones/db.root"; };
+
+    # localhost
+    zone "localhost" { type master; file "/var/lib/bind/zones/db.local"; allow-update { none; }; };
+    zone "127.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.127"; allow-update { none; }; };
+    zone "0.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.0"; allow-update { none; }; };
+    zone "255.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.255"; allow-update { none; }; };
+
+    # RFC 1918 private address range reverse zones
+    zone "10.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.10.in-addr.arpa"; allow-update { none; }; };
+    zone "16.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "17.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "18.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "19.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "20.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "21.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "22.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "23.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "24.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "25.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "26.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "27.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "28.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "29.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "30.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "31.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "32.172.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+    zone "168.192.in-addr.arpa" { type master; file "/var/lib/bind/zones/db.empty"; allow-update { none; }; };
+
+    # Private address forward zones
+    zone "example.com" { type master; file "/var/lib/bind/zones/db.example.com"; allow-update { none; }; };
+
+    # -----------------------------------------------------------------------------
+    # EOF
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bind-zones
+  namespace: bind
+data:
+  db.example.com: |-
+    $ORIGIN example.com.
+    $TTL    3600
+
+    @       IN      SOA     nameserver.example.com. hostmaster.example.com. (
+                          2023070101         ; Serial
+                              604800         ; Refresh
+                              86400         ; Retry
+                            2419200         ; Expire
+                              86400 )       ; Negative Cache TTL
+    ;
+
+    @               3600    IN      NS      ns01.example.com.
+    @               3600    IN      NS      ns02.example.com.
+
+    _ntp._udp       3600    IN      SRV     0   100   123   time.example.com.
+
+    ns01                  3600    IN      A       10.0.0.132
+    ns02                  3600    IN      A       10.3.53.10
+    server01              3600    IN      A       10.129.31.124
+    server02              3600    IN      A       10.13.235.221
+
+    ; -----------------------------------------------------------------------------
+    ; EOF
+  db.10.in-addr.arpa: |-
+    $ORIGIN 10.in-addr.arpa.
+    $TTL    3600
+
+    @       IN      SOA     nameserver.example.com. hostmaster.example.com. (
+                          2023070101         ; Serial
+                              604800         ; Refresh
+                              86400         ; Retry
+                            2419200         ; Expire
+                              86400 )       ; Negative Cache TTL
+    ;
+
+    @               3600    IN      NS      ns01.example.com.
+    @               3600    IN      NS      ns02.example.com.
+
+    0.0.132         3600    IN      PTR     ns01.example.com.
+    3.53.10         3600    IN      PTR     ns02.example.com..
+    129.31.124      3600    IN      PTR     server01.example.com.
+    13.235.221      3600    IN      PTR     server02.example.com.
+
+    ; -----------------------------------------------------------------------------
+    ; EOF
+  named.root: |-
+    ;       This file holds the information on root name servers needed to 
+    ;       initialize cache of Internet domain name servers
+    ;       (e.g. reference this file in the "cache  .  <file>"
+    ;       configuration file of BIND domain name servers). 
+    ; 
+    ;       This file is made available by InterNIC 
+    ;       under anonymous FTP as
+    ;           file                /domain/named.cache 
+    ;           on server           FTP.INTERNIC.NET
+    ;       -OR-                    RS.INTERNIC.NET
+    ; 
+    ;       last update:     January 11, 2021 
+    ;       related version of root zone:     2021011101
+    ; 
+    ; FORMERLY NS.INTERNIC.NET 
+    ;
+    .                        3600000      NS    A.ROOT-SERVERS.NET.
+    A.ROOT-SERVERS.NET.      3600000      A     198.41.0.4
+    A.ROOT-SERVERS.NET.      3600000      AAAA  2001:503:ba3e::2:30
+    ; 
+    ; FORMERLY NS1.ISI.EDU 
+    ;
+    .                        3600000      NS    B.ROOT-SERVERS.NET.
+    B.ROOT-SERVERS.NET.      3600000      A     199.9.14.201
+    B.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:200::b
+    ; 
+    ; FORMERLY C.PSI.NET 
+    ;
+    .                        3600000      NS    C.ROOT-SERVERS.NET.
+    C.ROOT-SERVERS.NET.      3600000      A     192.33.4.12
+    C.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:2::c
+    ; 
+    ; FORMERLY TERP.UMD.EDU 
+    ;
+    .                        3600000      NS    D.ROOT-SERVERS.NET.
+    D.ROOT-SERVERS.NET.      3600000      A     199.7.91.13
+    D.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:2d::d
+    ; 
+    ; FORMERLY NS.NASA.GOV
+    ;
+    .                        3600000      NS    E.ROOT-SERVERS.NET.
+    E.ROOT-SERVERS.NET.      3600000      A     192.203.230.10
+    E.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:a8::e
+    ; 
+    ; FORMERLY NS.ISC.ORG
+    ;
+    .                        3600000      NS    F.ROOT-SERVERS.NET.
+    F.ROOT-SERVERS.NET.      3600000      A     192.5.5.241
+    F.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:2f::f
+    ; 
+    ; FORMERLY NS.NIC.DDN.MIL
+    ;
+    .                        3600000      NS    G.ROOT-SERVERS.NET.
+    G.ROOT-SERVERS.NET.      3600000      A     192.112.36.4
+    G.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:12::d0d
+    ; 
+    ; FORMERLY AOS.ARL.ARMY.MIL
+    ;
+    .                        3600000      NS    H.ROOT-SERVERS.NET.
+    H.ROOT-SERVERS.NET.      3600000      A     198.97.190.53
+    H.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:1::53
+    ; 
+    ; FORMERLY NIC.NORDU.NET
+    ;
+    .                        3600000      NS    I.ROOT-SERVERS.NET.
+    I.ROOT-SERVERS.NET.      3600000      A     192.36.148.17
+    I.ROOT-SERVERS.NET.      3600000      AAAA  2001:7fe::53
+    ; 
+    ; OPERATED BY VERISIGN, INC.
+    ;
+    .                        3600000      NS    J.ROOT-SERVERS.NET.
+    J.ROOT-SERVERS.NET.      3600000      A     192.58.128.30
+    J.ROOT-SERVERS.NET.      3600000      AAAA  2001:503:c27::2:30
+    ; 
+    ; OPERATED BY RIPE NCC
+    ;
+    .                        3600000      NS    K.ROOT-SERVERS.NET.
+    K.ROOT-SERVERS.NET.      3600000      A     193.0.14.129
+    K.ROOT-SERVERS.NET.      3600000      AAAA  2001:7fd::1
+    ; 
+    ; OPERATED BY ICANN
+    ;
+    .                        3600000      NS    L.ROOT-SERVERS.NET.
+    L.ROOT-SERVERS.NET.      3600000      A     199.7.83.42
+    L.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:9f::42
+    ; 
+    ; OPERATED BY WIDE
+    ;
+    .                        3600000      NS    M.ROOT-SERVERS.NET.
+    M.ROOT-SERVERS.NET.      3600000      A     202.12.27.33
+    M.ROOT-SERVERS.NET.      3600000      AAAA  2001:dc3::35
+
+    ; -----------------------------------------------------------------------------
+    ; EOF
+  named.0: |-
+    ;
+    ; BIND reverse data file for broadcast zone
+    ;
+    $TTL    604800
+    @       IN      SOA     localhost. root.localhost. (
+                                  1         ; Serial
+                             604800         ; Refresh
+                              86400         ; Retry
+                            2419200         ; Expire
+                             604800 )       ; Negative Cache TTL
+    ;
+    @       IN      NS      localhost.
+
+    ; -----------------------------------------------------------------------------
+    ; EOF
+  named.127: |-
+    ;
+    ; BIND reverse data file for local loopback interface
+    ;
+    $TTL    604800
+    @       IN      SOA     localhost. root.localhost. (
+                                  1         ; Serial
+                             604800         ; Refresh
+                              86400         ; Retry
+                            2419200         ; Expire
+                             604800 )       ; Negative Cache TTL
+    ;
+    @       IN      NS      localhost.
+    1.0.0   IN      PTR     localhost.
+
+    ; -----------------------------------------------------------------------------
+    ; EOF
+  named.255: |-
+    ;
+    ; BIND reverse data file for broadcast zone
+    ;
+    $TTL    604800
+    @       IN      SOA     localhost. root.localhost. (
+                                  1         ; Serial
+                             604800         ; Refresh
+                              86400         ; Retry
+                            2419200         ; Expire
+                             604800 )       ; Negative Cache TTL
+    ;
+    @       IN      NS      localhost.
+
+    ; -----------------------------------------------------------------------------
+    ; EOF
+  named.empty: |-
+    ; BIND reverse data file for empty rfc1918 zone
+    ;
+    ; DO NOT EDIT THIS FILE - it is used for multiple zones.
+    ; Instead, copy it, edit named.conf, and use that copy.
+    ;
+    $TTL    86400
+    @       IN      SOA     localhost. root.localhost. (
+                                  1         ; Serial
+                             604800         ; Refresh
+                              86400         ; Retry
+                            2419200         ; Expire
+                              86400 )       ; Negative Cache TTL
+    ;
+    @       IN      NS      localhost.
+
+    ; -----------------------------------------------------------------------------
+    ; EOF
+  named.local: |-
+    ;
+    ; BIND data file for local loopback interface
+    ;
+    $TTL    604800
+    @       IN      SOA     localhost. root.localhost. (
+                                  2         ; Serial
+                             604800         ; Refresh
+                              86400         ; Retry
+                            2419200         ; Expire
+                             604800 )       ; Negative Cache TTL
+    ;
+    @       IN      NS      localhost.
+    @       IN      A       127.0.0.1
+    @       IN      AAAA    ::1
+
+    ; -----------------------------------------------------------------------------
+    ; EOF
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bind
+  namespace: bind
+  labels:
+    app: bind
+spec:
+  selector:
+    app: bind
+  ports:
+    - protocol: TCP
+      port: 53
+      targetPort: 53
+      name: dns-tcp
+    - protocol: UDP
+      port: 53
+      targetPort: 53
+      name: dns-udp
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: bind-tcp
+  namespace: bind
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - dns-tcp
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: bind
+          port: 53
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteUDP
+metadata:
+  name: bind-udp
+  namespace: bind
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - dns-udp
+  routes:
+    - services:
+        - name: bind
+          port: 53
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bind
+  namespace: bind
+spec:
+  selector:
+    matchLabels:
+      app: bind
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: bind
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: bind
+          image: aessing/bind:1.0.0
+          resources:
+            requests:
+              memory: 16Mi
+              cpu: 0.1
+            limits:
+              memory: 64Mi
+              cpu: 1
+          ports:
+            - containerPort: 53
+              protocol: TCP
+              name: dns-tcp
+            - containerPort: 53
+              protocol: UDP
+              name: dns-udp
+          volumeMounts:
+            - name: bind-config
+              mountPath: /etc/bind/named.conf
+              subPath: named.conf
+              readOnly: true
+            - name: bind-zones
+              mountPath: /var/lib/bind/zones
+              readOnly: true
+      volumes:
+        - name: bind-config
+          configMap:
+            name: bind-config
+        - name: bind-zones
+          configMap:
+            name: bind-zones
