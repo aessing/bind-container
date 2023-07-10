@@ -39,7 +39,9 @@ LABEL org.opencontainers.image.created=${BUILD_DATE} \
 
 ################################################### ############################
 # Install chronyd and necessary packages
-RUN apk add --update --no-cache bind ca-certificates tzdata \
+RUN apk --update --no-cache upgrade \
+    && apk add --update --no-cache bind ca-certificates tzdata \
+    && rm -rf /var/cache/apk/* \
     && update-ca-certificates \
     && cp /usr/share/zoneinfo/${TZ} /etc/localtime \
     && echo $TZ > /etc/timezone \
@@ -55,8 +57,8 @@ COPY container-files/named.conf /etc/bind/named.conf
 COPY container-files/db.* /var/lib/bind/zones/
 
 ###############################################################################
-# Healthcheck
-HEALTHCHECK CMD dig +norecurse +short +retry=0 @127.0.0.1 localhost || exit 1
+# Run in non-root context
+USER named
 
 ###############################################################################
 # Start chronyd
