@@ -42,11 +42,15 @@ LABEL org.opencontainers.image.created=${BUILD_DATE} \
 RUN apk add --update --no-cache bind ca-certificates tzdata \
     && update-ca-certificates \
     && cp /usr/share/zoneinfo/${TZ} /etc/localtime \
-    && echo $TZ > /etc/timezone
+    && echo $TZ > /etc/timezone \
+    && mkdir -p /etc/bind /var/lib/bind /var/cache/bind \
+    && chown -R named:named /etc/bind /var/lib/bind \
+    && chown -R root:named /var/cache/bind \
+    && chmod -R u+rw,g+rw,o-rwx /var/cache/bind /var/lib/bind \
+    && chmod -R u+rw,g+w,g-w,o-rwx /etc/bind 
 
 ###############################################################################
 # Copy files
-COPY container-files/entrypoint.sh /entrypoint.sh
 COPY container-files/named.conf /etc/bind/named.conf
 COPY container-files/db.* /var/lib/bind/zones/
 
@@ -56,7 +60,7 @@ HEALTHCHECK CMD dig +norecurse +short +retry=0 @127.0.0.1 localhost || exit 1
 
 ###############################################################################
 # Start chronyd
-CMD [ "/bin/sh", "entrypoint.sh" ]
+CMD [ "/usr/sbin/named", "-g", "-u", "named", "-c", "/etc/bind/named.conf" ]
 
 ###############################################################################
 #EOF
