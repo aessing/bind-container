@@ -13,7 +13,7 @@ $TTL    3600
 @               3600    IN      NS      ns02.example.com.
 
 0.0.132         3600    IN      PTR     ns01.example.com.
-3.53.10         3600    IN      PTR     ns02.example.com..
+3.53.10         3600    IN      PTR     ns02.example.com.
 129.31.124      3600    IN      PTR     server01.example.com.
 13.235.221      3600    IN      PTR     server02.example.com.
 
