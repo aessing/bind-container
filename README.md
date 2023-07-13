@@ -1,5 +1,7 @@
 # Bind Name Server Container
 
+![](.github/media/repository-open-graph-image.jpg)
+
 [BIND](https://bind.isc.org/) BIND is an open source DNS software system including an authoritative server or a recursive resolver.
 
 As the ISC only published a container with BIND9 DNS server for AMD64, this repository builds a Docker container for other architectures / platforms, based on [Alpine Linux](https://www.alpinelinux.org).
