@@ -438,7 +438,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: bind
-          image: aessing/bind:1.0.0
+          image: aessing/bind:1.1.0
           resources:
             requests:
               memory: 16Mi
